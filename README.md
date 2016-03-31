@@ -18,17 +18,18 @@ Execute either of the following:
   * Start a cassandra server instance:
 
 
-    docker run --name cassandra -d srdc/cassandra:3.3
+    `docker run --name cassandra -d srdc/cassandra:3.3`
 
   * Connect to Cassandra from an application in another Docker container:
 
 
-    docker run --name cassandra --link some-cassandra:cassandra -d app-that-uses-cassandra
+    `docker run --name cassandra --link some-cassandra:cassandra -d app-that-uses-cassandra`
+  
   
   * Make a cluster:
 
 
-    docker run --name cassandra2 -d -e CASSANDRA_SEEDS="$(docker inspect --format='{{ .NetworkSettings.IPAddress }}' cassandra)" srdc/cassandra:3.3
+    `docker run --name cassandra2 -d -e CASSANDRA_SEEDS="$(docker inspect --format='{{ .NetworkSettings.IPAddress }}' cassandra)" srdc/cassandra:3.3`
 
 
-    docker run --name cassandra2 -d --link cassandra:cassandra srdc/cassandra:3.3
+    `docker run --name cassandra2 -d --link cassandra:cassandra srdc/cassandra:3.3`
