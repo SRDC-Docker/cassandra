@@ -1,4 +1,5 @@
 FROM srdc/java:oraclejdk-8
+MAINTAINER SRDC Corp. <technical@srdc.com.tr>
 
 ### explicitly set user/group IDs
 RUN groupadd -r cassandra --gid=999 && useradd -r -g cassandra --uid=999 cassandra
@@ -17,31 +18,24 @@ RUN set -x \
 	&& gosu nobody true \
 	&& apt-get purge -y --auto-remove ca-certificates
 
-RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys 514A2AD631A57A16DD0047EC749D6EEC0353B12C
+# Add repository keys
+RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys 514A2AD631A57A16DD0047EC749D6EEC0353B12C \
+  && apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys A26E528B271F19B9E5D8E19EA278B781FE4B2BDA
+
+# solves warning: "jemalloc shared library could not be preloaded to speed up memory allocations"
+RUN apt-get update && apt-get install -y --no-install-recommends libjemalloc1 && rm -rf /var/lib/apt/lists/*
 
 ### install cassandra
 
 #add cassandra source
-RUN echo 'deb http://www.apache.org/dist/cassandra/debian 33x main' | tee -a /etc/apt/sources.list.d/cassandra.sources.list
-
-#add public keys to avoid package signature warnings during package updates, 
-#we need to add three public keys from the  Apache Software Foundation associated 
-#with the package repositories.
-RUN gpg --keyserver pgp.mit.edu --recv-keys F758CE318D77295D
-RUN gpg --export --armor F758CE318D77295D | apt-key add -
-
-RUN gpg --keyserver pgp.mit.edu --recv-keys 2B5C1B00
-RUN gpg --export --armor 2B5C1B00 | apt-key add -
-
-RUN gpg --keyserver pgp.mit.edu --recv-keys 0353B12C
-RUN gpg --export --armor 0353B12C | apt-key add -
+RUN echo 'deb http://www.apache.org/dist/cassandra/debian 310x main' | tee -a /etc/apt/sources.list.d/cassandra.sources.list
 
 #install cassandra
-ENV CASSANDRA_VERSION 3.3
+ENV CASSANDRA_VERSION 3.10
 
-RUN apt-get update 
-RUN apt-get install -y cassandra
-RUN rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+	&& apt-get install -y cassandra="$CASSANDRA_VERSION" \
+	&& rm -rf /var/lib/apt/lists/*
 
 ENV CASSANDRA_CONFIG /etc/cassandra
 
